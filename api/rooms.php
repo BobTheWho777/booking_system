@@ -1,0 +1,48 @@
+<?php
+declare(strict_types=1);
+
+header('Content-Type: application/json; charset=utf-8');
+
+require __DIR__ . '/../config/db.php';
+
+$checkin = $_GET['checkin'] ?? '';
+$checkout = $_GET['checkout'] ?? '';
+$guests = (int)($_GET['guests'] ?? 1);
+
+if ($checkin === '' || $checkout === '') {
+    http_response_code(400);
+    echo json_encode(['error' => 'Укажите даты'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+if (strtotime($checkin) === false || strtotime($checkout) === false || strtotime($checkout) <= strtotime($checkin)) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Некорректные даты'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+$sql = "
+    SELECT
+        r.id,
+        r.number,
+        r.status,
+        rt.name AS type_name,
+        r.price,
+        rt.capacity
+    FROM rooms r
+    JOIN room_types rt ON rt.id = r.type_id
+    WHERE r.status = 'available'
+      AND rt.capacity >= ?
+      AND r.id NOT IN (
+          SELECT room_id
+          FROM bookings
+          WHERE status IN ('confirmed', 'checked_in')
+            AND ((check_in <= ? AND check_out > ?) OR (check_in < ? AND check_out >= ?))
+      )
+    ORDER BY r.number
+";
+
+$stmt = $pdo->prepare($sql);
+$stmt->execute([$guests, $checkout, $checkin, $checkout, $checkin]);
+
+echo json_encode($stmt->fetchAll(), JSON_UNESCAPED_UNICODE);
