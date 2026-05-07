@@ -1,8 +1,6 @@
 <?php
 declare(strict_types=1);
-
 header('Content-Type: application/json; charset=utf-8');
-
 require __DIR__ . '/../config/db.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -24,6 +22,7 @@ $checkOut = (string)($input['checkOut'] ?? '');
 $guestCount = (int)($input['guestCount'] ?? 0);
 $guest = $input['guest'] ?? [];
 
+// Валидация обязательных полей
 foreach (['firstName', 'lastName', 'phone', 'email'] as $field) {
     if (trim((string)($guest[$field] ?? '')) === '') {
         http_response_code(400);
@@ -32,6 +31,7 @@ foreach (['firstName', 'lastName', 'phone', 'email'] as $field) {
     }
 }
 
+// Базовая проверка входных данных
 if ($roomId <= 0 || $guestCount <= 0 || strtotime($checkIn) === false || strtotime($checkOut) === false || strtotime($checkOut) <= strtotime($checkIn)) {
     http_response_code(400);
     echo json_encode(['error' => 'Некорректные данные бронирования'], JSON_UNESCAPED_UNICODE);
@@ -41,12 +41,13 @@ if ($roomId <= 0 || $guestCount <= 0 || strtotime($checkIn) === false || strtoti
 try {
     $pdo->beginTransaction();
 
+    // 1. Блокировка комнаты на время транзакции
     $roomStmt = $pdo->prepare(
         "SELECT r.id, r.status, r.price, rt.capacity
-         FROM rooms r
-         JOIN room_types rt ON rt.id = r.type_id
-         WHERE r.id = ?
-         FOR UPDATE"
+        FROM rooms r
+        JOIN room_types rt ON rt.id = r.type_id
+        WHERE r.id = ?
+        FOR UPDATE"
     );
     $roomStmt->execute([$roomId]);
     $room = $roomStmt->fetch();
@@ -59,11 +60,12 @@ try {
         throw new RuntimeException('Номер не вмещает такое количество гостей');
     }
 
+    // 2. Проверка пересечений по датам
     $conflictStmt = $pdo->prepare(
         "SELECT COUNT(*) FROM bookings
-         WHERE room_id = ?
-           AND status IN ('confirmed', 'checked_in')
-           AND ((check_in <= ? AND check_out > ?) OR (check_in < ? AND check_out >= ?))"
+        WHERE room_id = ?
+        AND status IN ('confirmed', 'checked_in')
+        AND ((check_in <= ? AND check_out > ?) OR (check_in < ? AND check_out >= ?))"
     );
     $conflictStmt->execute([$roomId, $checkOut, $checkIn, $checkOut, $checkIn]);
 
@@ -71,27 +73,37 @@ try {
         throw new RuntimeException('На выбранные даты номер уже занят');
     }
 
+    // 3. Создание гостя
+    $guestData = [
+        'firstName' => trim((string)$guest['firstName']),
+        'lastName'  => trim((string)$guest['lastName']),
+        'phone'     => trim((string)$guest['phone']),
+        'email'     => trim((string)$guest['email']),
+        'passport'  => trim((string)($guest['passport'] ?? '')),
+    ];
+
     $guestStmt = $pdo->prepare(
         "INSERT INTO guests (first_name, last_name, phone, email, passport)
-         VALUES (?, ?, ?, ?, ?)"
+        VALUES (?, ?, ?, ?, ?)"
     );
     $guestStmt->execute([
-        trim((string)$guest['firstName']),
-        trim((string)$guest['lastName']),
-        trim((string)$guest['phone']),
-        trim((string)$guest['email']),
-        trim((string)($guest['passport'] ?? '')),
+        $guestData['firstName'],
+        $guestData['lastName'],
+        $guestData['phone'],
+        $guestData['email'],
+        $guestData['passport'],
     ]);
     $guestId = (int)$pdo->lastInsertId();
 
-    $days = max(1, (int)ceil((strtotime($checkOut) - strtotime($checkIn)) / 86400));
+    // 4. Расчёт стоимости и создание бронирования
+    $days = max(1, (new DateTime($checkIn))->diff(new DateTime($checkOut))->days);
     $totalPrice = $days * (float)$room['price'];
     $bookingNumber = date('Ymd') . '-' . random_int(1000, 9999);
 
     $bookingStmt = $pdo->prepare(
         "INSERT INTO bookings
-         (booking_number, guest_id, room_id, check_in, check_out, guest_count, total_price, status)
-         VALUES (?, ?, ?, ?, ?, ?, ?, 'confirmed')"
+        (booking_number, guest_id, room_id, check_in, check_out, guest_count, total_price, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, 'confirmed')"
     );
     $bookingStmt->execute([
         $bookingNumber,
@@ -104,13 +116,11 @@ try {
     ]);
 
     $pdo->commit();
-
     echo json_encode(['success' => true, 'bookingNumber' => $bookingNumber], JSON_UNESCAPED_UNICODE);
 } catch (Throwable $e) {
     if ($pdo->inTransaction()) {
         $pdo->rollBack();
     }
-
     http_response_code(400);
     echo json_encode(['error' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
 }

@@ -1,12 +1,9 @@
 <?php
 declare(strict_types=1);
-
 require_once __DIR__ . '/../config/app.php';
-
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
-
 $pageTitle = $pageTitle ?? 'Мини-гостиница «Олимп»';
 ?>
 <!DOCTYPE html>
@@ -18,19 +15,19 @@ $pageTitle = $pageTitle ?? 'Мини-гостиница «Олимп»';
     <link rel="stylesheet" href="<?= htmlspecialchars(app_url('assets/css/style.css'), ENT_QUOTES, 'UTF-8') ?>">
 </head>
 <body>
-<nav class="greek-nav">
-    <div class="nav-container">
-        <a href="<?= htmlspecialchars(app_url('index.php'), ENT_QUOTES, 'UTF-8') ?>" class="nav-brand">ΟΛΥΜΠΟΣ</a>
-        <div class="nav-links">
-            <a href="<?= htmlspecialchars(app_url('index.php'), ENT_QUOTES, 'UTF-8') ?>" class="nav-link">Главная</a>
-            <a href="<?= htmlspecialchars(app_url('booking.php'), ENT_QUOTES, 'UTF-8') ?>" class="nav-link">Бронирование</a>
-            <?php if (isset($_SESSION['user'])): ?>
-                <a href="<?= htmlspecialchars(app_url('admin/index.php'), ENT_QUOTES, 'UTF-8') ?>" class="nav-link">Админ-панель</a>
-                <a href="<?= htmlspecialchars(app_url('logout.php'), ENT_QUOTES, 'UTF-8') ?>" class="nav-link" style="color: #F4E4BC;">Выйти</a>
-            <?php else: ?>
-                <a href="<?= htmlspecialchars(app_url('login.php'), ENT_QUOTES, 'UTF-8') ?>" class="nav-link">Войти</a>
-            <?php endif; ?>
+    <nav class="greek-nav">
+        <div class="nav-container">
+            <a href="<?= htmlspecialchars(app_url('index.php'), ENT_QUOTES, 'UTF-8') ?>" class="nav-brand">ΟΛΥΜΠΟΣ</a>
+            <div class="nav-links">
+                <a href="<?= htmlspecialchars(app_url('index.php'), ENT_QUOTES, 'UTF-8') ?>" class="nav-link">Главная</a>
+                <a href="<?= htmlspecialchars(app_url('booking.php'), ENT_QUOTES, 'UTF-8') ?>" class="nav-link">Бронирование</a>
+                <?php if (isset($_SESSION['user'])): ?>
+                    <a href="<?= htmlspecialchars(app_url('admin/index.php'), ENT_QUOTES, 'UTF-8') ?>" class="nav-link">Админ-панель</a>
+                    <a href="<?= htmlspecialchars(app_url('logout.php'), ENT_QUOTES, 'UTF-8') ?>" class="nav-link" style="color: #F4E4BC;">Выйти</a>
+                <?php else: ?>
+                    <a href="<?= htmlspecialchars(app_url('login.php'), ENT_QUOTES, 'UTF-8') ?>" class="nav-link">Войти</a>
+                <?php endif; ?>
+            </div>
         </div>
-    </div>
-</nav>
-<main>
+    </nav>
+    <main>

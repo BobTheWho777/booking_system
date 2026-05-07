@@ -1,9 +1,15 @@
 <?php
+declare(strict_types=1);
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../includes/admin_layout.php';
 require_admin();
 
-$statuses = ['available' => 'Свободен', 'booked' => 'Забронирован', 'maintenance' => 'На ремонте', 'occupied' => 'Занят'];
+$statuses = [
+    'available'   => 'Свободен',
+    'booked'      => 'Забронирован',
+    'maintenance' => 'На ремонте',
+    'occupied'    => 'Занят'
+];
 
 function rooms_redirect(string $type, string $message): void
 {
@@ -15,13 +21,11 @@ function rooms_redirect(string $type, string $message): void
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['delete_id'])) {
         $id = (int)$_POST['delete_id'];
-
         $stmt = $pdo->prepare('SELECT COUNT(*) FROM bookings WHERE room_id = ?');
         $stmt->execute([$id]);
         if ((int)$stmt->fetchColumn() > 0) {
             rooms_redirect('error', 'Нельзя удалить комнату, потому что к ней есть бронирования.');
         }
-
         $stmt = $pdo->prepare('DELETE FROM rooms WHERE id = ?');
         $stmt->execute([$id]);
         rooms_redirect('success', 'Комната удалена.');
@@ -43,13 +47,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $status = 'available';
         }
 
-        if ($id !== '') {
-            $stmt = $pdo->prepare('SELECT COUNT(*) FROM rooms WHERE number = ? AND id <> ?');
-            $stmt->execute([$number, $id]);
-        } else {
-            $stmt = $pdo->prepare('SELECT COUNT(*) FROM rooms WHERE number = ?');
-            $stmt->execute([$number]);
-        }
+        // Один запрос вместо двух веток if/else
+        $stmt = $pdo->prepare('SELECT COUNT(*) FROM rooms WHERE number = ? AND id != ?');
+        $stmt->execute([$number, (int)($id ?: 0)]);
 
         if ((int)$stmt->fetchColumn() > 0) {
             rooms_redirect('error', 'Комната с таким номером уже существует.');
@@ -87,7 +87,6 @@ $rooms = $stmt->fetchAll();
 
 admin_page_start('Управление комнатами', 'rooms');
 ?>
-
 <div style="margin-bottom: 2rem;">
     <h3><?= $editRoom ? 'Редактировать комнату' : 'Добавить новую комнату' ?></h3>
     <form method="post">
@@ -156,7 +155,18 @@ admin_page_start('Управление комнатами', 'rooms');
                 <td><strong><?= h($room['number']) ?></strong></td>
                 <td><?= h($room['type_name']) ?></td>
                 <td><?= h(number_format((float)$room['price'], 2, ',', ' ')) ?> ₽</td>
-                <td><span style="padding: 0.3rem 0.8rem; border-radius: 12px; background: <?= $room['status'] === 'available' ? 'var(--success-bg); color: var(--success)' : 'var(--error-bg); color: var(--error)' ?>"><?= h($statuses[$room['status']] ?? $room['status']) ?></span></td>
+                <td>
+                    <?php
+                    $badgeStyle = match ($room['status']) {
+                        'available'   => 'var(--success-bg); color: var(--success)',
+                        'maintenance' => 'var(--warning-bg, #fff3cd); color: #856404',
+                        default       => 'var(--error-bg); color: var(--error)'
+                    };
+                    ?>
+                    <span style="padding: 0.3rem 0.8rem; border-radius: 12px; background: <?= $badgeStyle ?>">
+                        <?= h($statuses[$room['status']] ?? $room['status']) ?>
+                    </span>
+                </td>
                 <td><?= h($room['description'] ?: '—') ?></td>
                 <td>
                     <div style="display: flex; gap: 0.5rem;">
@@ -174,5 +184,4 @@ admin_page_start('Управление комнатами', 'rooms');
         <?php endif; ?>
     </tbody>
 </table>
-
 <?php admin_page_end(); ?>
