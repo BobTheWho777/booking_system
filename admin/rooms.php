@@ -21,6 +21,20 @@ function rooms_redirect(string $type, string $message): void
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['delete_id'])) {
         $id = (int)$_POST['delete_id'];
+        
+        // Получаем изображения перед удалением комнаты
+        $stmt = $pdo->prepare('SELECT image_path FROM room_images WHERE room_id = ?');
+        $stmt->execute([$id]);
+        $images = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        
+        // Удаляем файлы изображений
+        foreach ($images as $img) {
+            $filePath = __DIR__ . '/../uploads/rooms/' . $img;
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
+        }
+        
         $stmt = $pdo->prepare('SELECT COUNT(*) FROM bookings WHERE room_id = ?');
         $stmt->execute([$id]);
         if ((int)$stmt->fetchColumn() > 0) {
@@ -58,10 +72,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($id !== '') {
             $stmt = $pdo->prepare('UPDATE rooms SET number = ?, type_id = ?, price = ?, status = ?, description = ? WHERE id = ?');
             $stmt->execute([$number, $type_id, $price, $status, $description, $id]);
+            
+            // Обработка изображений
+            if (!empty($_FILES['images']['name'][0])) {
+                $uploadDir = __DIR__ . '/../uploads/rooms/';
+                foreach ($_FILES['images']['tmp_name'] as $key => $tmpName) {
+                    if ($_FILES['images']['error'][$key] === UPLOAD_ERR_OK) {
+                        $fileName = uniqid() . '_' . basename($_FILES['images']['name'][$key]);
+                        $targetPath = $uploadDir . $fileName;
+                        if (move_uploaded_file($tmpName, $targetPath)) {
+                            $stmtImg = $pdo->prepare('INSERT INTO room_images (room_id, image_path, sort_order) VALUES (?, ?, ?)');
+                            $stmtImg->execute([$id, $fileName, $key]);
+                        }
+                    }
+                }
+            }
+            
             rooms_redirect('success', 'Комната обновлена.');
         } else {
             $stmt = $pdo->prepare('INSERT INTO rooms (number, type_id, price, status, description) VALUES (?, ?, ?, ?, ?)');
             $stmt->execute([$number, $type_id, $price, $status, $description]);
+            $newRoomId = $pdo->lastInsertId();
+            
+            // Обработка изображений для новой комнаты
+            if (!empty($_FILES['images']['name'][0])) {
+                $uploadDir = __DIR__ . '/../uploads/rooms/';
+                foreach ($_FILES['images']['tmp_name'] as $key => $tmpName) {
+                    if ($_FILES['images']['error'][$key] === UPLOAD_ERR_OK) {
+                        $fileName = uniqid() . '_' . basename($_FILES['images']['name'][$key]);
+                        $targetPath = $uploadDir . $fileName;
+                        if (move_uploaded_file($tmpName, $targetPath)) {
+                            $stmtImg = $pdo->prepare('INSERT INTO room_images (room_id, image_path, sort_order) VALUES (?, ?, ?)');
+                            $stmtImg->execute([$newRoomId, $fileName, $key]);
+                        }
+                    }
+                }
+            }
+            
             rooms_redirect('success', 'Комната добавлена.');
         }
     }
@@ -84,6 +131,13 @@ $stmt = $pdo->query('
     ORDER BY r.number
 ');
 $rooms = $stmt->fetchAll();
+
+// Загружаем изображения для каждой комнаты
+foreach ($rooms as &$room) {
+    $stmt = $pdo->prepare('SELECT image_path FROM room_images WHERE room_id = ? ORDER BY sort_order, id');
+    $stmt->execute([$room['id']]);
+    $room['images'] = $stmt->fetchAll(PDO::FETCH_COLUMN);
+}
 
 admin_page_start('Управление комнатами', 'rooms');
 ?>
@@ -124,6 +178,20 @@ admin_page_start('Управление комнатами', 'rooms');
             <label class="form-label">Описание</label>
             <textarea name="description" class="form-textarea" placeholder="Описание комнаты..."><?= h($editRoom['description'] ?? '') ?></textarea>
         </div>
+        <div class="form-group">
+            <label class="form-label">Изображения комнаты</label>
+            <input type="file" name="images[]" class="form-input" multiple accept="image/*">
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">Можно выбрать несколько файлов. Поддерживаются форматы: JPG, PNG, GIF.</p>
+            <?php if ($editRoom && !empty($editRoom['images'])): ?>
+                <div style="margin-top: 1rem; display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 0.5rem;">
+                    <?php foreach ($editRoom['images'] as $img): ?>
+                        <div style="position: relative;">
+                            <img src="<?= BASE_URL ?>uploads/rooms/<?= h($img) ?>" alt="Фото комнаты" style="width: 100%; height: 80px; object-fit: cover; border-radius: 4px;">
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
         <div style="display: flex; gap: 1rem;">
             <button class="btn-greek" type="submit" name="save_room"><?= $editRoom ? 'Сохранить изменения' : 'Добавить комнату' ?></button>
             <?php if ($editRoom): ?>
@@ -144,6 +212,7 @@ admin_page_start('Управление комнатами', 'rooms');
             <th>Тип</th>
             <th>Цена</th>
             <th>Статус</th>
+            <th>Фото</th>
             <th>Описание</th>
             <th>Действия</th>
         </tr>
@@ -167,6 +236,20 @@ admin_page_start('Управление комнатами', 'rooms');
                         <?= h($statuses[$room['status']] ?? $room['status']) ?>
                     </span>
                 </td>
+                <td>
+                    <?php if (!empty($room['images'])): ?>
+                        <div style="display: flex; gap: 0.3rem;">
+                            <?php foreach (array_slice($room['images'], 0, 3) as $img): ?>
+                                <img src="<?= BASE_URL ?>uploads/rooms/<?= h($img) ?>" alt="Фото" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">
+                            <?php endforeach; ?>
+                            <?php if (count($room['images']) > 3): ?>
+                                <span style="display: flex; align-items: center; font-size: 0.85rem; color: var(--text-muted);">+<?= count($room['images']) - 3 ?></span>
+                            <?php endif; ?>
+                        </div>
+                    <?php else: ?>
+                        <span style="color: var(--text-muted); font-size: 0.9rem;">Нет фото</span>
+                    <?php endif; ?>
+                </td>
                 <td><?= h($room['description'] ?: '—') ?></td>
                 <td>
                     <div style="display: flex; gap: 0.5rem;">
@@ -180,7 +263,7 @@ admin_page_start('Управление комнатами', 'rooms');
             </tr>
         <?php endforeach; ?>
         <?php if (!$rooms): ?>
-            <tr><td colspan="7" class="text-center" style="padding: 2rem; color: var(--text-muted);">Комнат пока нет. Добавьте первую комнату!</td></tr>
+            <tr><td colspan="8" class="text-center" style="padding: 2rem; color: var(--text-muted);">Комнат пока нет. Добавьте первую комнату!</td></tr>
         <?php endif; ?>
     </tbody>
 </table>
