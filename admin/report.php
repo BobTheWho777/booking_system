@@ -41,7 +41,7 @@ require __DIR__ . '/../includes/header.php';
 ?>
 <div class="container">
     <div class="marble-card">
-        <h1>📊 Отчёт по загрузке</h1>
+        <h1><i class="fas fa-chart-bar" style="margin-right: 0.5rem;"></i> Отчёт по загрузке</h1>
         <div class="divider"></div>
         
         <div class="grid grid-3" style="margin-bottom: 3rem;">

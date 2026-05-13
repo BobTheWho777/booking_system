@@ -94,7 +94,7 @@ form.addEventListener('submit', async (event) => {
     }
 
     message.style.color = 'var(--success)';
-    message.textContent = `✓ Бронирование создано: ${data.bookingNumber}`;
+    message.textContent = `<i class="fas fa-check-circle" style="margin-right: 0.5rem;"></i> Бронирование создано: ${data.bookingNumber}`;
     form.reset();
 });
 </script>

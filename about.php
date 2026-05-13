@@ -28,7 +28,7 @@ require __DIR__ . '/includes/header.php';
 
     <div class="grid grid-2" style="margin-bottom: 2rem;">
         <div class="marble-card">
-            <h3 style="text-align: center; color: var(--gold-dark);">🏛️ Наша миссия</h3>
+            <h3 style="text-align: center; color: var(--gold-dark);"><i class="fas fa-landmark" style="margin-right: 0.5rem;"></i>Наша миссия</h3>
             <p style="font-size: 1.1rem; line-height: 1.7; text-align: justify;">
                 Предоставить каждому гостю незабываемый опыт проживания, сочетая традиции древнегреческого 
                 гостеприимства с современным комфортом. Мы стремимся создать атмосферу, в которой время 
@@ -37,7 +37,7 @@ require __DIR__ . '/includes/header.php';
         </div>
         
         <div class="marble-card">
-            <h3 style="text-align: center; color: var(--gold-dark);">⭐ Наши ценности</h3>
+            <h3 style="text-align: center; color: var(--gold-dark);"><i class="fas fa-star" style="margin-right: 0.5rem;"></i>Наши ценности</h3>
             <ul style="font-size: 1.1rem; line-height: 1.8; padding-left: 1.5rem;">
                 <li><strong>Гостеприимство:</strong> Каждый гость для нас — как бог на Олимпе</li>
                 <li><strong>Комфорт:</strong> Современные удобства в классическом оформлении</li>
@@ -52,17 +52,17 @@ require __DIR__ . '/includes/header.php';
         <h2 style="text-align: center; margin-bottom: 1.5rem;">Почему выбирают «Олимп»?</h2>
         <div class="grid grid-3">
             <div style="text-align: center; padding: 1rem;">
-                <div style="font-size: 3rem; margin-bottom: 0.5rem;">🗓️</div>
+                <i class="fas fa-calendar-check" style="font-size: 3rem; color: var(--gold); margin-bottom: 0.5rem;"></i>
                 <h4 style="color: var(--aegean-dark);">Быстрое бронирование</h4>
                 <p style="font-size: 1rem; color: var(--text-secondary);">Забронируйте номер за 30 секунд через нашу удобную онлайн-систему</p>
             </div>
             <div style="text-align: center; padding: 1rem;">
-                <div style="font-size: 3rem; margin-bottom: 0.5rem;">💰</div>
+                <i class="fas fa-ruble-sign" style="font-size: 3rem; color: var(--gold); margin-bottom: 0.5rem;"></i>
                 <h4 style="color: var(--aegean-dark);">Доступные цены</h4>
                 <p style="font-size: 1rem; color: var(--text-secondary);">Оптимальное соотношение цены и качества для любого бюджета</p>
             </div>
             <div style="text-align: center; padding: 1rem;">
-                <div style="font-size: 3rem; margin-bottom: 0.5rem;">📍</div>
+                <i class="fas fa-map-marked-alt" style="font-size: 3rem; color: var(--gold); margin-bottom: 0.5rem;"></i>
                 <h4 style="color: var(--aegean-dark);">Удобное расположение</h4>
                 <p style="font-size: 1rem; color: var(--text-secondary);">Центральная локация с лёгким доступом ко всем достопримечательностям</p>
             </div>
@@ -73,27 +73,27 @@ require __DIR__ . '/includes/header.php';
         <h2 style="text-align: center; margin-bottom: 1.5rem;">Наши преимущества</h2>
         <div class="grid grid-2">
             <div>
-                <h4 style="color: var(--olive);">✓ Круглосуточная регистрация</h4>
+                <h4 style="color: var(--olive);"><i class="fas fa-check-circle" style="margin-right: 0.5rem;"></i>Круглосуточная регистрация</h4>
                 <p style="font-size: 1.05rem; color: var(--text-secondary);">Заезд и выезд в любое удобное для вас время</p>
             </div>
             <div>
-                <h4 style="color: var(--olive);">✓ Бесплатный Wi-Fi</h4>
+                <h4 style="color: var(--olive);"><i class="fas fa-check-circle" style="margin-right: 0.5rem;"></i>Бесплатный Wi-Fi</h4>
                 <p style="font-size: 1.05rem; color: var(--text-secondary);">Высокоскоростной интернет на всей территории</p>
             </div>
             <div>
-                <h4 style="color: var(--olive);">✓ Кондиционеры</h4>
+                <h4 style="color: var(--olive);"><i class="fas fa-check-circle" style="margin-right: 0.5rem;"></i>Кондиционеры</h4>
                 <p style="font-size: 1.05rem; color: var(--text-secondary);">Климат-контроль в каждом номере</p>
             </div>
             <div>
-                <h4 style="color: var(--olive);">✓ Ежедневная уборка</h4>
+                <h4 style="color: var(--olive);"><i class="fas fa-check-circle" style="margin-right: 0.5rem;"></i>Ежедневная уборка</h4>
                 <p style="font-size: 1.05rem; color: var(--text-secondary);">Поддержание чистоты и порядка</p>
             </div>
             <div>
-                <h4 style="color: var(--olive);">✓ Парковка</h4>
+                <h4 style="color: var(--olive);"><i class="fas fa-check-circle" style="margin-right: 0.5rem;"></i>Парковка</h4>
                 <p style="font-size: 1.05rem; color: var(--text-secondary);">Охраняемая территория для ваших автомобилей</p>
             </div>
             <div>
-                <h4 style="color: var(--olive);">✓ Трансфер</h4>
+                <h4 style="color: var(--olive);"><i class="fas fa-check-circle" style="margin-right: 0.5rem;"></i>Трансфер</h4>
                 <p style="font-size: 1.05rem; color: var(--text-secondary);">Встреча и проводы по предварительной записи</p>
             </div>
         </div>

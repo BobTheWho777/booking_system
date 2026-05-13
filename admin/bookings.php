@@ -59,7 +59,7 @@ require __DIR__ . '/../includes/header.php';
 ?>
 <div class="container">
     <div class="marble-card">
-        <h1>📅 Бронирования</h1>
+        <h1><i class="fas fa-calendar-alt" style="margin-right: 0.5rem;"></i> Бронирования</h1>
         <div class="divider"></div>
 
         <?php if (isset($_GET['success'])): ?>
