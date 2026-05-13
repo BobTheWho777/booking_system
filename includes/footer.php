@@ -14,10 +14,10 @@ declare(strict_types=1);
             <div>
                 <h4 style="color: var(--gold-light); font-size: 1.2rem; margin-bottom: 1rem;">Контакты</h4>
                 <p style="font-size: 1rem; opacity: 0.9; line-height: 1.8;">
-                    📍 Адрес: ул. Олимпийская, д. 1<br>
-                    📞 Телефон: +7 (999) 123-45-67<br>
-                    ✉️ Email: info@olymp-hotel.ru<br>
-                    🕒 Режим работы: Круглосуточно
+                    <i class="fas fa-map-marker-alt" style="width: 20px; color: var(--gold);"></i> Адрес: ул. Олимпийская, д. 1<br>
+                    <i class="fas fa-phone" style="width: 20px; color: var(--gold);"></i> Телефон: +7 (999) 123-45-67<br>
+                    <i class="fas fa-envelope" style="width: 20px; color: var(--gold);"></i> Email: info@olymp-hotel.ru<br>
+                    <i class="fas fa-clock" style="width: 20px; color: var(--gold);"></i> Режим работы: Круглосуточно
                 </p>
             </div>
             <div>
