@@ -77,14 +77,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Обработка изображений
             if (!empty($_FILES['images']['name'][0])) {
                 $uploadDir = __DIR__ . '/../uploads/rooms/';
+                
+                // Проверяем существование директории
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0755, true);
+                }
+                
                 foreach ($_FILES['images']['tmp_name'] as $key => $tmpName) {
                     if ($_FILES['images']['error'][$key] === UPLOAD_ERR_OK) {
-                        $fileName = uniqid() . '_' . basename($_FILES['images']['name'][$key]);
+                        // Проверка типа файла
+                        $fileTmpPath = $_FILES['images']['tmp_name'][$key];
+                        $fileName = $_FILES['images']['name'][$key];
+                        $fileSize = $_FILES['images']['size'][$key];
+                        $fileType = $_FILES['images']['type'][$key];
+                        
+                        $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                        $fileInfo = new finfo(FILEINFO_MIME_TYPE);
+                        $mimeType = $fileInfo->file($fileTmpPath);
+                        
+                        if (!in_array($mimeType, $allowedMimeTypes)) {
+                            rooms_redirect('error', 'Недопустимый тип файла. Разрешены только JPG, PNG, GIF, WebP.');
+                        }
+                        
+                        $fileName = uniqid() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '', basename($fileName));
                         $targetPath = $uploadDir . $fileName;
+                        
                         if (move_uploaded_file($tmpName, $targetPath)) {
+                            chmod($targetPath, 0644);
                             $stmtImg = $pdo->prepare('INSERT INTO room_images (room_id, image_path, sort_order) VALUES (?, ?, ?)');
                             $stmtImg->execute([$id, $fileName, $key]);
+                        } else {
+                            rooms_redirect('error', 'Ошибка при сохранении файла: ' . $fileName);
                         }
+                    } else {
+                        $errorMessages = [
+                            UPLOAD_ERR_INI_SIZE => 'Файл слишком большой (превышен лимит php.ini)',
+                            UPLOAD_ERR_FORM_SIZE => 'Файл слишком большой (превышен лимит формы)',
+                            UPLOAD_ERR_PARTIAL => 'Файл загружен частично',
+                            UPLOAD_ERR_NO_FILE => 'Файл не был загружен',
+                            UPLOAD_ERR_NO_TMP_DIR => 'Отсутствует временная директория',
+                            UPLOAD_ERR_CANT_WRITE => 'Ошибка записи на диск',
+                            UPLOAD_ERR_EXTENSION => 'Загрузка прервана расширением PHP'
+                        ];
+                        $errorMsg = $errorMessages[$_FILES['images']['error'][$key]] ?? 'Неизвестная ошибка';
+                        rooms_redirect('error', 'Ошибка загрузки файла: ' . $errorMsg);
                     }
                 }
             }
@@ -98,14 +134,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Обработка изображений для новой комнаты
             if (!empty($_FILES['images']['name'][0])) {
                 $uploadDir = __DIR__ . '/../uploads/rooms/';
+                
+                // Проверяем существование директории
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0755, true);
+                }
+                
                 foreach ($_FILES['images']['tmp_name'] as $key => $tmpName) {
                     if ($_FILES['images']['error'][$key] === UPLOAD_ERR_OK) {
-                        $fileName = uniqid() . '_' . basename($_FILES['images']['name'][$key]);
+                        // Проверка типа файла
+                        $fileTmpPath = $_FILES['images']['tmp_name'][$key];
+                        $fileName = $_FILES['images']['name'][$key];
+                        
+                        $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                        $fileInfo = new finfo(FILEINFO_MIME_TYPE);
+                        $mimeType = $fileInfo->file($fileTmpPath);
+                        
+                        if (!in_array($mimeType, $allowedMimeTypes)) {
+                            // Удаляем только что созданную комнату, так как изображения не загрузились
+                            $stmtDel = $pdo->prepare('DELETE FROM rooms WHERE id = ?');
+                            $stmtDel->execute([$newRoomId]);
+                            rooms_redirect('error', 'Недопустимый тип файла. Разрешены только JPG, PNG, GIF, WebP.');
+                        }
+                        
+                        $fileName = uniqid() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '', basename($fileName));
                         $targetPath = $uploadDir . $fileName;
+                        
                         if (move_uploaded_file($tmpName, $targetPath)) {
+                            chmod($targetPath, 0644);
                             $stmtImg = $pdo->prepare('INSERT INTO room_images (room_id, image_path, sort_order) VALUES (?, ?, ?)');
                             $stmtImg->execute([$newRoomId, $fileName, $key]);
+                        } else {
+                            // Удаляем только что созданную комнату
+                            $stmtDel = $pdo->prepare('DELETE FROM rooms WHERE id = ?');
+                            $stmtDel->execute([$newRoomId]);
+                            rooms_redirect('error', 'Ошибка при сохранении файла: ' . $fileName);
                         }
+                    } else {
+                        // Удаляем только что созданную комнату
+                        $stmtDel = $pdo->prepare('DELETE FROM rooms WHERE id = ?');
+                        $stmtDel->execute([$newRoomId]);
+                        
+                        $errorMessages = [
+                            UPLOAD_ERR_INI_SIZE => 'Файл слишком большой (превышен лимит php.ini)',
+                            UPLOAD_ERR_FORM_SIZE => 'Файл слишком большой (превышен лимит формы)',
+                            UPLOAD_ERR_PARTIAL => 'Файл загружен частично',
+                            UPLOAD_ERR_NO_FILE => 'Файл не был загружен',
+                            UPLOAD_ERR_NO_TMP_DIR => 'Отсутствует временная директория',
+                            UPLOAD_ERR_CANT_WRITE => 'Ошибка записи на диск',
+                            UPLOAD_ERR_EXTENSION => 'Загрузка прервана расширением PHP'
+                        ];
+                        $errorMsg = $errorMessages[$_FILES['images']['error'][$key]] ?? 'Неизвестная ошибка';
+                        rooms_redirect('error', 'Ошибка загрузки файла: ' . $errorMsg);
                     }
                 }
             }
