@@ -83,26 +83,159 @@ async function searchRooms() {
         'maintenance': 'На ремонте'
     };
 
-    results.innerHTML = data.map(room => `
-        <article class="marble-card" style="padding: 1rem;">
-            <div class="flex-between" style="margin-bottom: 0.6rem;">
-                <h3 style="margin: 0; font-size: 1.15rem; line-height: 1.3;">№ ${room.number}</h3>
-                <span style="padding: 0.2rem 0.5rem; border-radius: 8px; background: var(--success-bg); color: var(--success); font-size: 0.75rem; white-space: nowrap;">${statusLabels[room.status] || room.status}</span>
-            </div>
-            <p style="color: var(--text-secondary); font-size: 1.05rem; margin-bottom: 0.35rem;">${room.type_name}</p>
-            <p style="font-size: 1.25rem; font-weight: 700; color: var(--aegean-dark); margin-bottom: 0.8rem;">${Number(room.price).toLocaleString('ru-RU')} ₽</p>
-            <a style="display: block; text-align: center; text-decoration: none; font-size: 1rem; padding: 0.6rem 0.3rem; width: 100%; background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%); color: white; border-radius: 4px; font-family: system-ui, -apple-system, sans-serif; font-weight: 600; box-shadow: var(--shadow-sm); line-height: 1.3;"
-               href="${BASE_URL}booking.php?roomId=${encodeURIComponent(room.id)}&checkin=${encodeURIComponent(checkin)}&checkout=${encodeURIComponent(checkout)}&guests=${encodeURIComponent(guests)}">
-               Забронировать
-            </a>
-        </article>
-    `).join('');
+    results.innerHTML = data.map(room => {
+        const images = room.images || [];
+        const hasImages = images.length > 0;
+        
+        let sliderHtml = '';
+        if (hasImages) {
+            sliderHtml = `
+                <div class="room-slider" style="position: relative; margin-bottom: 1rem; border-radius: 8px; overflow: hidden;" data-room-id="${room.id}">
+                    <div class="slider-track" style="display: flex; transition: transform 0.3s ease;">
+                        ${images.map((img, idx) => `
+                            <div class="slide" style="min-width: 100%; position: relative;">
+                                <img src="${BASE_URL}uploads/rooms/${img}" alt="Фото номера" style="width: 100%; height: 200px; object-fit: cover; cursor: pointer;" onclick="openLightbox('${room.number}', ${idx}, ${JSON.stringify(images).replace(/"/g, '&quot;')})">
+                            </div>
+                        `).join('')}
+                    </div>
+                    ${images.length > 1 ? `
+                        <button class="slider-prev" onclick="moveSlide(this, -1)" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; padding: 0.5rem; border-radius: 50%; cursor: pointer; font-size: 1.2rem;">&#10094;</button>
+                        <button class="slider-next" onclick="moveSlide(this, 1)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; padding: 0.5rem; border-radius: 50%; cursor: pointer; font-size: 1.2rem;">&#10095;</button>
+                    ` : ''}
+                    ${images.length > 1 ? `
+                        <div class="slider-dots" style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 0.5rem;">
+                            ${images.map((_, idx) => `<span class="dot" data-index="${idx}" style="width: 8px; height: 8px; border-radius: 50%; background: ${idx === 0 ? 'white' : 'rgba(255,255,255,0.5)'}; cursor: pointer;" onclick="goToSlide(this.closest('.room-slider'), ${idx})"></span>`).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        } else {
+            sliderHtml = `<div style="margin-bottom: 1rem; height: 200px; background: linear-gradient(135deg, var(--marble-light) 0%, var(--marble-dark) 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 1.2rem;"><i class="fas fa-image" style="margin-right: 0.5rem;"></i>Нет фото</div>`;
+        }
+        
+        return `
+            <article class="marble-card" style="padding: 1rem;">
+                ${sliderHtml}
+                <div class="flex-between" style="margin-bottom: 0.6rem;">
+                    <h3 style="margin: 0; font-size: 1.15rem; line-height: 1.3;">№ ${room.number}</h3>
+                    <span style="padding: 0.2rem 0.5rem; border-radius: 8px; background: var(--success-bg); color: var(--success); font-size: 0.75rem; white-space: nowrap;">${statusLabels[room.status] || room.status}</span>
+                </div>
+                <p style="color: var(--text-secondary); font-size: 1.05rem; margin-bottom: 0.35rem;">${room.type_name}</p>
+                <p style="font-size: 1.25rem; font-weight: 700; color: var(--aegean-dark); margin-bottom: 0.8rem;">${Number(room.price).toLocaleString('ru-RU')} ₽</p>
+                <a style="display: block; text-align: center; text-decoration: none; font-size: 1rem; padding: 0.6rem 0.3rem; width: 100%; background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%); color: white; border-radius: 4px; font-family: system-ui, -apple-system, sans-serif; font-weight: 600; box-shadow: var(--shadow-sm); line-height: 1.3;"
+                   href="${BASE_URL}booking.php?roomId=${encodeURIComponent(room.id)}&checkin=${encodeURIComponent(checkin)}&checkout=${encodeURIComponent(checkout)}&guests=${encodeURIComponent(guests)}">
+                   Забронировать
+                </a>
+            </article>
+        `;
+    }).join('');
 }
 
 form.addEventListener('submit', (event) => {
     event.preventDefault();
     searchRooms();
 });
+
+// Функции слайдера
+function moveSlide(slider, direction) {
+    const track = slider.querySelector('.slider-track');
+    const slides = slider.querySelectorAll('.slide');
+    const dots = slider.querySelectorAll('.dot');
+    const currentIndex = parseInt(track.dataset.currentIndex || 0);
+    let newIndex = currentIndex + direction;
+    
+    if (newIndex < 0) newIndex = slides.length - 1;
+    if (newIndex >= slides.length) newIndex = 0;
+    
+    track.style.transform = `translateX(-${newIndex * 100}%)`;
+    track.dataset.currentIndex = newIndex;
+    
+    // Обновляем точки
+    dots.forEach((dot, idx) => {
+        dot.style.background = idx === newIndex ? 'white' : 'rgba(255,255,255,0.5)';
+    });
+}
+
+function goToSlide(slider, index) {
+    const track = slider.querySelector('.slider-track');
+    const dots = slider.querySelectorAll('.dot');
+    
+    track.style.transform = `translateX(-${index * 100}%)`;
+    track.dataset.currentIndex = index;
+    
+    dots.forEach((dot, idx) => {
+        dot.style.background = idx === index ? 'white' : 'rgba(255,255,255,0.5)';
+    });
+}
+
+// Лайтбокс для просмотра изображений
+let lightbox = null;
+function openLightbox(roomNumber, startIndex, images) {
+    if (lightbox) return;
+    
+    lightbox = document.createElement('div');
+    lightbox.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 10000; display: flex; flex-direction: column; justify-content: center; align-items: center;';
+    
+    lightbox.innerHTML = `
+        <button onclick="closeLightbox()" style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: white; font-size: 2rem; cursor: pointer;">&times;</button>
+        <h2 style="color: white; margin-bottom: 1rem; font-family: 'Cormorant Garamond', serif;">Номер ${roomNumber}</h2>
+        <div style="position: relative; max-width: 90%; max-height: 80%;">
+            <img id="lightbox-img" src="${BASE_URL}uploads/rooms/${images[startIndex]}" style="max-width: 100%; max-height: 80vh; object-fit: contain;" alt="Фото номера">
+            <button onclick="moveLightboxSlide(-1)" style="position: absolute; left: -50px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.2); color: white; border: none; padding: 1rem; border-radius: 50%; cursor: pointer; font-size: 1.5rem;">&#10094;</button>
+            <button onclick="moveLightboxSlide(1)" style="position: absolute; right: -50px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.2); color: white; border: none; padding: 1rem; border-radius: 50%; cursor: pointer; font-size: 1.5rem;">&#10095;</button>
+        </div>
+        <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+            ${images.map((_, idx) => `<span onclick="setLightboxSlide(${idx})" style="width: 12px; height: 12px; border-radius: 50%; background: ${idx === startIndex ? 'white' : 'rgba(255,255,255,0.3)'}; cursor: pointer;"></span>`).join('')}
+        </div>
+    `;
+    
+    lightbox.dataset.currentIndex = startIndex;
+    lightbox.dataset.images = JSON.stringify(images);
+    
+    document.body.appendChild(lightbox);
+    document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+    if (!lightbox) return;
+    lightbox.remove();
+    lightbox = null;
+    document.body.style.overflow = '';
+}
+
+function moveLightboxSlide(direction) {
+    if (!lightbox) return;
+    
+    const images = JSON.parse(lightbox.dataset.images);
+    let currentIndex = parseInt(lightbox.dataset.currentIndex || 0);
+    let newIndex = currentIndex + direction;
+    
+    if (newIndex < 0) newIndex = images.length - 1;
+    if (newIndex >= images.length) newIndex = 0;
+    
+    document.getElementById('lightbox-img').src = BASE_URL + 'uploads/rooms/' + images[newIndex];
+    lightbox.dataset.currentIndex = newIndex;
+    
+    // Обновляем точки
+    const dots = lightbox.querySelectorAll('[onclick^="setLightboxSlide"]');
+    dots.forEach((dot, idx) => {
+        dot.style.background = idx === newIndex ? 'white' : 'rgba(255,255,255,0.3)';
+    });
+}
+
+function setLightboxSlide(index) {
+    if (!lightbox) return;
+    
+    const images = JSON.parse(lightbox.dataset.images);
+    document.getElementById('lightbox-img').src = BASE_URL + 'uploads/rooms/' + images[index];
+    lightbox.dataset.currentIndex = index;
+    
+    // Обновляем точки
+    const dots = lightbox.querySelectorAll('[onclick^="setLightboxSlide"]');
+    dots.forEach((dot, idx) => {
+        dot.style.background = idx === index ? 'white' : 'rgba(255,255,255,0.3)';
+    });
+}
 
 searchRooms();
 </script>

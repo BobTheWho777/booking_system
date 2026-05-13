@@ -45,4 +45,13 @@ $sql = "
 $stmt = $pdo->prepare($sql);
 $stmt->execute([$guests, $checkout, $checkin, $checkout, $checkin]);
 
-echo json_encode($stmt->fetchAll(), JSON_UNESCAPED_UNICODE);
+$rooms = $stmt->fetchAll();
+
+// Добавляем изображения к каждой комнате
+foreach ($rooms as &$room) {
+    $stmtImg = $pdo->prepare('SELECT image_path FROM room_images WHERE room_id = ? ORDER BY sort_order, id');
+    $stmtImg->execute([$room['id']]);
+    $room['images'] = $stmtImg->fetchAll(PDO::FETCH_COLUMN);
+}
+
+echo json_encode($rooms, JSON_UNESCAPED_UNICODE);
