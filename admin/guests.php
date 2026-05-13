@@ -6,7 +6,7 @@ require_admin();
 function guests_redirect(string $type, string $message): void
 {
     flash_set($type, $message);
-    header('Location: ' . BASE_URL . 'admin/guests.php');
+    header('Location: guests.php');
     exit;
 }
 
@@ -97,7 +97,7 @@ admin_page_start('Управление гостями', 'guests');
         <div style="display: flex; gap: 1rem;">
             <button class="btn-greek" type="submit" name="save_guest"><?= $editGuest ? 'Сохранить изменения' : 'Добавить гостя' ?></button>
             <?php if ($editGuest): ?>
-                <a class="btn-greek btn-outline" href="<?= h(BASE_URL) ?>admin/guests.php">Отмена</a>
+                <a class="btn-greek btn-outline" href="guests.php">Отмена</a>
             <?php endif; ?>
         </div>
     </form>

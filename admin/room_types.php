@@ -6,7 +6,7 @@ require_admin();
 function types_redirect(string $type, string $message): void
 {
     flash_set($type, $message);
-    header('Location: ' . BASE_URL . 'admin/room_types.php');
+    header('Location: room_types.php');
     exit;
 }
 
@@ -99,7 +99,7 @@ admin_page_start('Типы номеров', 'room_types');
         <div style="display: flex; gap: 1rem;">
             <button class="btn-greek" type="submit" name="save_type"><?= $editType ? 'Сохранить изменения' : 'Добавить тип' ?></button>
             <?php if ($editType): ?>
-                <a class="btn-greek btn-outline" href="<?= h(BASE_URL) ?>admin/room_types.php">Отмена</a>
+                <a class="btn-greek btn-outline" href="room_types.php">Отмена</a>
             <?php endif; ?>
         </div>
     </form>

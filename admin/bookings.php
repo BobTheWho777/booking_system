@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
         $stmt = $pdo->prepare('UPDATE bookings SET status = ? WHERE id = ?');
         $stmt->execute([$newStatus, $bookingId]);
         
-        header('Location: ' . BASE_URL . 'admin/bookings.php?success=1');
+        header('Location: bookings.php?success=1');
         exit;
     }
 }

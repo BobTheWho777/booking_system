@@ -14,7 +14,7 @@ $statuses = [
 function rooms_redirect(string $type, string $message): void
 {
     flash_set($type, $message);
-    header('Location: ' . BASE_URL . 'admin/rooms.php');
+    header('Location: rooms.php');
     exit;
 }
 
@@ -127,7 +127,7 @@ admin_page_start('Управление комнатами', 'rooms');
         <div style="display: flex; gap: 1rem;">
             <button class="btn-greek" type="submit" name="save_room"><?= $editRoom ? 'Сохранить изменения' : 'Добавить комнату' ?></button>
             <?php if ($editRoom): ?>
-                <a class="btn-greek btn-outline" href="<?= h(BASE_URL) ?>admin/rooms.php">Отмена</a>
+                <a class="btn-greek btn-outline" href="rooms.php">Отмена</a>
             <?php endif; ?>
         </div>
     </form>
