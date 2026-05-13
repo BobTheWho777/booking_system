@@ -83,9 +83,22 @@ async function searchRooms() {
         'maintenance': 'На ремонте'
     };
 
+    const featureIcons = {
+        'area': 'fa-ruler-combined',
+        'wifi': 'fa-wifi',
+        'ac': 'fa-snowflake',
+        'fridge': 'fa-ice-cream',
+        'tv': 'fa-tv',
+        'balcony': 'fa-home',
+        'sea_view': 'fa-water',
+        'jacuzzi': 'fa-hot-tub',
+        'living_room': 'fa-couch'
+    };
+
     results.innerHTML = data.map(room => {
         const images = room.images || [];
         const hasImages = images.length > 0;
+        const features = room.features || [];
         
         let sliderHtml = '';
         if (hasImages) {
@@ -94,7 +107,7 @@ async function searchRooms() {
                     <div class="slider-track" style="display: flex; transition: transform 0.3s ease;">
                         ${images.map((img, idx) => `
                             <div class="slide" style="min-width: 100%; position: relative;">
-                                <img src="${BASE_URL}uploads/rooms/${img}" alt="Фото номера" style="width: 100%; height: 200px; object-fit: cover; cursor: pointer;" onclick="openLightbox('${room.number}', ${idx}, ${JSON.stringify(images).replace(/"/g, '&quot;')})">
+                                <img src="${BASE_URL}uploads/rooms/${img}" alt="Фото номера" style="width: 100%; height: 220px; object-fit: cover; cursor: pointer;" onclick="openLightbox('${room.number}', ${idx}, ${JSON.stringify(images).replace(/"/g, '&quot;')})">
                             </div>
                         `).join('')}
                     </div>
@@ -110,19 +123,36 @@ async function searchRooms() {
                 </div>
             `;
         } else {
-            sliderHtml = `<div style="margin-bottom: 1rem; height: 200px; background: linear-gradient(135deg, var(--marble-light) 0%, var(--marble-dark) 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 1.2rem;"><i class="fas fa-image" style="margin-right: 0.5rem;"></i>Нет фото</div>`;
+            sliderHtml = `<div style="margin-bottom: 1rem; height: 220px; background: linear-gradient(135deg, var(--marble-light) 0%, var(--marble-dark) 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 1.2rem;"><i class="fas fa-image" style="margin-right: 0.5rem;"></i>Нет фото</div>`;
         }
         
+        // Формируем HTML характеристик
+        let featuresHtml = '';
+        if (features.length > 0) {
+            featuresHtml = `<div class="room-features">${features.map(f => {
+                const iconClass = featureIcons[f.feature_code] || 'fa-check';
+                return `<span class="room-feature"><i class="fas ${iconClass}"></i>${f.feature_value}</span>`;
+            }).join('')}</div>`;
+        }
+        
+        const statusClass = `room-status-${room.status}`;
+        
         return `
-            <article class="marble-card" style="padding: 1rem;">
+            <article class="marble-card" style="padding: 1.2rem;">
                 ${sliderHtml}
-                <div class="flex-between" style="margin-bottom: 0.6rem;">
-                    <h3 style="margin: 0; font-size: 1.15rem; line-height: 1.3;">№ ${room.number}</h3>
-                    <span style="padding: 0.2rem 0.5rem; border-radius: 8px; background: var(--success-bg); color: var(--success); font-size: 0.75rem; white-space: nowrap;">${statusLabels[room.status] || room.status}</span>
+                <div class="flex-between" style="margin-bottom: 0.8rem;">
+                    <h3 style="margin: 0; font-size: 1.3rem; line-height: 1.3; color: var(--aegean-dark);">№ ${room.number}</h3>
+                    <span class="room-status-badge ${statusClass}">${statusLabels[room.status] || room.status}</span>
                 </div>
-                <p style="color: var(--text-secondary); font-size: 1.05rem; margin-bottom: 0.35rem;">${room.type_name}</p>
-                <p style="font-size: 1.25rem; font-weight: 700; color: var(--aegean-dark); margin-bottom: 0.8rem;">${Number(room.price).toLocaleString('ru-RU')} ₽</p>
-                <a style="display: block; text-align: center; text-decoration: none; font-size: 1rem; padding: 0.6rem 0.3rem; width: 100%; background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%); color: white; border-radius: 4px; font-family: system-ui, -apple-system, sans-serif; font-weight: 600; box-shadow: var(--shadow-sm); line-height: 1.3;"
+                <p style="color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 0.5rem; font-weight: 600;">${room.type_name}</p>
+                ${featuresHtml}
+                <div style="margin-top: 1rem; padding-top: 0.8rem; border-top: 1px solid var(--marble-medium);">
+                    <p style="font-size: 1.4rem; font-weight: 700; color: var(--aegean-dark); margin-bottom: 0.3rem;">
+                        ${Number(room.price).toLocaleString('ru-RU')} ₽
+                        <span class="price-per-day">/ сутки</span>
+                    </p>
+                </div>
+                <a style="display: block; text-align: center; text-decoration: none; font-size: 1.05rem; padding: 0.7rem 0.5rem; width: 100%; background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%); color: white; border-radius: 4px; font-family: system-ui, -apple-system, sans-serif; font-weight: 600; box-shadow: var(--shadow-sm); line-height: 1.3; margin-top: 0.8rem;"
                    href="${BASE_URL}booking.php?roomId=${encodeURIComponent(room.id)}&checkin=${encodeURIComponent(checkin)}&checkout=${encodeURIComponent(checkout)}&guests=${encodeURIComponent(guests)}">
                    Забронировать
                 </a>
