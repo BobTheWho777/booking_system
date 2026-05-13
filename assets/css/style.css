@@ -462,35 +462,36 @@ p {
 
 /* ========================================
    Админка - шрифт Inter для интерфейса
+   Применяется ТОЛЬКО к body.admin-page
    ======================================== */
-body .greek-table,
-body .form-input,
-body .form-select,
-body .form-textarea,
-body .btn-greek,
-body .admin-nav-link,
-body .flash-message {
+body.admin-page .greek-table,
+body.admin-page .form-input,
+body.admin-page .form-select,
+body.admin-page .form-textarea,
+body.admin-page .btn-greek,
+body.admin-page .admin-nav-link,
+body.admin-page .flash-message {
     font-family: 'Inter', sans-serif;
 }
 
-body .greek-table thead th {
+body.admin-page .greek-table thead th {
     font-family: 'Inter', sans-serif;
     font-weight: 600;
     letter-spacing: 0.02em;
 }
 
-body .greek-table tbody td {
+body.admin-page .greek-table tbody td {
     font-family: 'Inter', sans-serif;
     font-size: 0.95rem;
 }
 
-body .form-label {
+body.admin-page .form-label {
     font-family: 'Inter', sans-serif;
     font-weight: 600;
     font-size: 0.95rem;
 }
 
-body .btn-greek {
+body.admin-page .btn-greek {
     font-family: 'Inter', sans-serif;
     font-weight: 600;
     letter-spacing: 0.05em;

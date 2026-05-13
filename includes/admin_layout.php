@@ -13,8 +13,36 @@ function admin_page_start(string $title, string $active = ''): void
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= h($title) ?> — ΟΛΥΜΠΟΣ</title>
     <link rel="stylesheet" href="<?= h(BASE_URL) ?>assets/css/style.css">
+    <style>
+        /* Шрифт Inter ТОЛЬКО для админки */
+        body.admin-page {
+            font-family: 'Inter', sans-serif !important;
+        }
+        body.admin-page h1,
+        body.admin-page h2,
+        body.admin-page h3,
+        body.admin-page h4,
+        body.admin-page h5,
+        body.admin-page h6 {
+            font-family: 'Inter', sans-serif !important;
+        }
+        body.admin-page .greek-table,
+        body.admin-page .form-input,
+        body.admin-page .form-select,
+        body.admin-page .form-textarea,
+        body.admin-page .btn-greek,
+        body.admin-page .admin-nav-link,
+        body.admin-page .flash-message {
+            font-family: 'Inter', sans-serif !important;
+        }
+        body.admin-page .greek-table thead th,
+        body.admin-page .greek-table tbody td,
+        body.admin-page .form-label {
+            font-family: 'Inter', sans-serif !important;
+        }
+    </style>
 </head>
-<body>
+<body class="admin-page">
 <nav class="greek-nav">
     <div class="nav-container">
         <a href="<?= h(BASE_URL) ?>index.php" class="nav-brand">ΟΛΥΜΠΟΣ</a>
