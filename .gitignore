@@ -1,5 +1,5 @@
-```php
-# Compiled and build artifacts
+```gitignore
+# Compiled and binary files
 *.pyc
 __pycache__/
 *.o
@@ -17,32 +17,34 @@ venv/
 .env.local
 .env.*
 
-# Logs and temp files
+# Build artifacts
+dist/
+build/
+target/
+
+# Logs and temporary files
 *.log
 *.tmp
 *.swp
 *.swo
 
-# Editors
+# Coverage reports
+coverage/
+htmlcov/
+.coverage
+
+# IDE and editor files
 .vscode/
 .idea/
+*.swp
+*.swo
 
 # System files
 .DS_Store
 Thumbs.db
 
-# Coverage and testing
-.coverage
-coverage/
-htmlcov/
-
-# Build directories
-dist/
-build/
-target/
-.gradle/
-
 # Cache directories
 .mypy_cache/
 .pytest_cache/
+.gradle/
 ```

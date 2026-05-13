@@ -17,14 +17,14 @@ function admin_page_start(string $title, string $active = ''): void
 <body>
 <nav class="greek-nav">
     <div class="nav-container">
-        <a href="<?= h(BASE_URL) ?>admin/index.php" class="nav-brand">ΟΛΥΜΠΟΣ</a>
+        <a href="<?= h(BASE_URL) ?>index.php" class="nav-brand">ΟΛΥΜΠΟΣ</a>
         <div class="nav-links">
             <a href="<?= h(BASE_URL) ?>index.php" class="nav-link">На сайт</a>
-            <a href="<?= h(BASE_URL) ?>admin/rooms.php" class="nav-link <?= $active === 'rooms' ? 'active' : '' ?>">Комнаты</a>
-            <a href="<?= h(BASE_URL) ?>admin/room_types.php" class="nav-link <?= $active === 'room_types' ? 'active' : '' ?>">Типы номеров</a>
-            <a href="<?= h(BASE_URL) ?>admin/guests.php" class="nav-link <?= $active === 'guests' ? 'active' : '' ?>">Гости</a>
-            <a href="<?= h(BASE_URL) ?>admin/bookings.php" class="nav-link <?= $active === 'bookings' ? 'active' : '' ?>">Бронирования</a>
-            <a href="<?= h(BASE_URL) ?>admin/report.php" class="nav-link <?= $active === 'report' ? 'active' : '' ?>">Отчёты</a>
+            <a href="<?= h(BASE_URL) ?>rooms.php" class="nav-link <?= $active === 'rooms' ? 'active' : '' ?>">Комнаты</a>
+            <a href="<?= h(BASE_URL) ?>room_types.php" class="nav-link <?= $active === 'room_types' ? 'active' : '' ?>">Типы номеров</a>
+            <a href="<?= h(BASE_URL) ?>guests.php" class="nav-link <?= $active === 'guests' ? 'active' : '' ?>">Гости</a>
+            <a href="<?= h(BASE_URL) ?>bookings.php" class="nav-link <?= $active === 'bookings' ? 'active' : '' ?>">Бронирования</a>
+            <a href="<?= h(BASE_URL) ?>report.php" class="nav-link <?= $active === 'report' ? 'active' : '' ?>">Отчёты</a>
             <a href="<?= h(BASE_URL) ?>logout.php" class="nav-link" style="color: #F4E4BC;">Выйти</a>
         </div>
     </div>
