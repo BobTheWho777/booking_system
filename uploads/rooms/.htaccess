@@ -1,0 +1,11 @@
+# Запрещаем выполнение PHP в папке загрузок комнат
+<FilesMatch "\.(php|phtml|php3|php4|php5)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Разрешаем только изображения
+<FilesMatch "\.(jpg|jpeg|png|gif|webp)$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>

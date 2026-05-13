@@ -1,0 +1,5 @@
+# Запрещаем выполнение PHP в папке загрузок
+<FilesMatch "\.(php|phtml|php3|php4|php5)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>

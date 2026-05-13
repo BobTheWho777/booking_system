@@ -99,6 +99,36 @@ require __DIR__ . '/includes/header.php';
         </div>
     </div>
 
+    <div class="marble-card" style="margin-bottom: 2rem;">
+        <h2 style="text-align: center; margin-bottom: 1.5rem;">Контакты</h2>
+        <div class="grid grid-3">
+            <div style="text-align: center; padding: 1rem;">
+                <i class="fas fa-map-marker-alt" style="font-size: 2.5rem; color: var(--gold); margin-bottom: 0.8rem;"></i>
+                <h4 style="color: var(--aegean-dark); margin-bottom: 0.5rem;">Адрес</h4>
+                <p style="font-size: 1.05rem; color: var(--text-secondary); margin: 0;">ул. Олимпийская, д. 1<br>г. Сочи, Россия</p>
+            </div>
+            <div style="text-align: center; padding: 1rem;">
+                <i class="fas fa-phone-alt" style="font-size: 2.5rem; color: var(--gold); margin-bottom: 0.8rem;"></i>
+                <h4 style="color: var(--aegean-dark); margin-bottom: 0.5rem;">Телефон</h4>
+                <p style="font-size: 1.05rem; color: var(--text-secondary); margin: 0;">+7 (999) 123-45-67<br>+7 (862) 000-00-00</p>
+            </div>
+            <div style="text-align: center; padding: 1rem;">
+                <i class="fas fa-envelope" style="font-size: 2.5rem; color: var(--gold); margin-bottom: 0.8rem;"></i>
+                <h4 style="color: var(--aegean-dark); margin-bottom: 0.5rem;">Email</h4>
+                <p style="font-size: 1.05rem; color: var(--text-secondary); margin: 0;">info@olymp-hotel.ru<br>booking@olymp-hotel.ru</p>
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid var(--marble-medium);">
+            <p style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+                <i class="fas fa-clock" style="color: var(--gold); margin-right: 0.5rem;"></i>
+                <strong>Режим работы:</strong> Круглосуточно, без выходных
+            </p>
+            <p style="font-size: 1rem; color: var(--text-muted);">
+                Мы всегда готовы ответить на ваши вопросы и помочь с бронированием
+            </p>
+        </div>
+    </div>
+
     <div class="marble-card" style="text-align: center;">
         <h2 style="margin-bottom: 1rem;">Готовы стать частью нашей легенды?</h2>
         <p style="font-size: 1.2rem; color: var(--text-secondary); margin-bottom: 2rem;">
