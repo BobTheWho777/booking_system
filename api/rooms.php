@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 header('Content-Type: application/json; charset=utf-8');
 
+require __DIR__ . '/../config/app.php';
 require __DIR__ . '/../config/db.php';
 
 $checkin = $_GET['checkin'] ?? '';
