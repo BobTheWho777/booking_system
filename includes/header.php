@@ -20,6 +20,7 @@ $pageTitle = $pageTitle ?? 'Мини-гостиница «Олимп»';
             <a href="<?= htmlspecialchars(app_url('index.php'), ENT_QUOTES, 'UTF-8') ?>" class="nav-brand">ΟΛΥΜΠΟΣ</a>
             <div class="nav-links">
                 <a href="<?= htmlspecialchars(app_url('index.php'), ENT_QUOTES, 'UTF-8') ?>" class="nav-link">Главная</a>
+                <a href="<?= htmlspecialchars(app_url('about.php'), ENT_QUOTES, 'UTF-8') ?>" class="nav-link">О нас</a>
                 <a href="<?= htmlspecialchars(app_url('booking.php'), ENT_QUOTES, 'UTF-8') ?>" class="nav-link">Бронирование</a>
                 <?php if (isset($_SESSION['user'])): ?>
                     <a href="<?= htmlspecialchars(app_url('admin/index.php'), ENT_QUOTES, 'UTF-8') ?>" class="nav-link">Админ-панель</a>
