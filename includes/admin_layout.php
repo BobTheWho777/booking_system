@@ -11,7 +11,7 @@ function admin_page_start(string $title, string $active = ''): void
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title><?= h($title) ?> — ΟΛΥΜΠΟΣ</title>
+    <title><?= h($title) ?> — ΑΦΡΟΔΙΤΗ</title>
     <link rel="stylesheet" href="<?= h(BASE_URL) ?>assets/css/style.css">
     <style>
         /* Шрифт Inter ТОЛЬКО для админки */
@@ -45,7 +45,7 @@ function admin_page_start(string $title, string $active = ''): void
 <body class="admin-page">
 <nav class="greek-nav">
     <div class="nav-container">
-        <a href="<?= h(BASE_URL) ?>index.php" class="nav-brand">ΟΛΥΜΠΟΣ</a>
+        <a href="<?= h(BASE_URL) ?>index.php" class="nav-brand">ΑΦΡΟΔΙΤΗ</a>
         <div class="nav-links">
             <a href="<?= h(BASE_URL) ?>index.php" class="nav-link">На сайт</a>
             <a href="<?= h(BASE_URL) ?>admin/rooms.php" class="nav-link <?= $active === 'rooms' ? 'active' : '' ?>">Комнаты</a>

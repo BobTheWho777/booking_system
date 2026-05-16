@@ -1,12 +1,12 @@
 <?php
 declare(strict_types=1);
 
-$pageTitle = 'Мини-гостиница «Олимп»';
+$pageTitle = 'РГК "Афродита" — Главная Страница';
 require __DIR__ . '/includes/header.php';
 ?>
 <section class="hero-section">
-    <h1>ΜΙΝΙ-ΞΕΝΟΔΟΧΕΊΟ «ΌΛΥΜΠΟΣ»</h1>
-    <p style="font-size: 1.5rem; font-style: italic; font-family: 'Cormorant Garamond', serif;">Забронируйте номер за 30 секунд — добро пожаловать в дом богов</p>
+    <h1>ΡΓΚ «ΑΦΡΟΔΙΤΗ»</h1>
+    <p style="font-size: 1.5rem; font-style: italic; font-family: 'Cormorant Garamond', serif;">Забронируйте номер прямо сейчас — окунитесь в мир уюта и греческого гостеприимства</p>
 </section>
 
 <div class="container">
@@ -111,10 +111,7 @@ async function searchRooms() {
                             </div>
                         `).join('')}
                     </div>
-                    ${images.length > 1 ? `
-                        <button class="slider-prev" onclick="moveSlide(this, -1)" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; padding: 0.5rem; border-radius: 50%; cursor: pointer; font-size: 1.2rem;">&#10094;</button>
-                        <button class="slider-next" onclick="moveSlide(this, 1)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; padding: 0.5rem; border-radius: 50%; cursor: pointer; font-size: 1.2rem;">&#10095;</button>
-                    ` : ''}
+                
                     ${images.length > 1 ? `
                         <div class="slider-dots" style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 0.5rem;">
                             ${images.map((_, idx) => `<span class="dot" data-index="${idx}" style="width: 8px; height: 8px; border-radius: 50%; background: ${idx === 0 ? 'white' : 'rgba(255,255,255,0.5)'}; cursor: pointer;" onclick="goToSlide(this.closest('.room-slider'), ${idx})"></span>`).join('')}

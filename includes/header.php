@@ -4,13 +4,14 @@ require_once __DIR__ . '/../config/app.php';
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
-$pageTitle = $pageTitle ?? 'Мини-гостиница «Олимп»';
+$pageTitle = $pageTitle ?? 'РГК «Афродита»';
 ?>
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="<?= htmlspecialchars(app_url('uploads/icons/logo-nav.ico'), ENT_QUOTES, 'UTF-8') ?>">
     <title><?= htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8') ?></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="<?= htmlspecialchars(app_url('assets/css/style.css'), ENT_QUOTES, 'UTF-8') ?>">
@@ -18,7 +19,7 @@ $pageTitle = $pageTitle ?? 'Мини-гостиница «Олимп»';
 <body>
     <nav class="greek-nav">
         <div class="nav-container">
-            <a href="<?= htmlspecialchars(app_url('index.php'), ENT_QUOTES, 'UTF-8') ?>" class="nav-brand">ΟΛΥΜΠΟΣ</a>
+            <a href="<?= htmlspecialchars(app_url('index.php'), ENT_QUOTES, 'UTF-8') ?>" class="nav-brand">ΑΦΡΟΔΙΤΗ</a>
             <div class="nav-links">
                 <a href="<?= htmlspecialchars(app_url('index.php'), ENT_QUOTES, 'UTF-8') ?>" class="nav-link">Главная</a>
                 <a href="<?= htmlspecialchars(app_url('about.php'), ENT_QUOTES, 'UTF-8') ?>" class="nav-link">О нас</a>

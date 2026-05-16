@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-$pageTitle = 'Оформление бронирования';
+$pageTitle = 'Бронирование — Ресторанно-гостиничный комплекс «Афродита»';
 require __DIR__ . '/includes/header.php';
 
 $roomId = (int)($_GET['roomId'] ?? 0);
@@ -31,7 +31,7 @@ $guests = (int)($_GET['guests'] ?? 1);
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="phone">Телефон</label>
-                    <input id="phone" class="form-input" required placeholder="+7 (___) ___-__-__">
+                    <input id="phone" type="tel" class="form-input" required maxlength="18" autocomplete="tel" placeholder="+7 (___) ___-__-__">
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="email">Email</label>
@@ -54,9 +54,40 @@ $guests = (int)($_GET['guests'] ?? 1);
 </div>
 
 <script>
+
 const BASE_URL = <?= json_encode(BASE_URL, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
 const form = document.getElementById('bookingForm');
 const message = document.getElementById('message');
+const phoneInput = document.getElementById('phone');
+
+phoneInput.addEventListener('input', function (e) {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.startsWith('8')) {
+        value = '7' + value.slice(1);
+    }
+    if (!value.startsWith('7')) {
+        value = '7' + value;
+    }
+    value = value.slice(0, 11);
+
+    let formatted = '+7';
+    if (value.length > 1) {
+        formatted += ' (' + value.slice(1, 4);
+    }
+    if (value.length >= 5) {
+        formatted += ') ' + value.slice(4, 7);
+    }
+    if (value.length >= 8) {
+        formatted += '-' + value.slice(7, 9);
+    }
+    if (value.length >= 10) {
+        formatted += '-' + value.slice(9, 11);
+    }
+    e.target.value = formatted;
+});
+
+
+
 
 form.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -69,7 +100,7 @@ form.addEventListener('submit', async (event) => {
         guest: {
             firstName: document.getElementById('firstName').value.trim(),
             lastName: document.getElementById('lastName').value.trim(),
-            phone: document.getElementById('phone').value.trim(),
+            phone: document.getElementById('phone').value.replace(/\D/g, ''),
             email: document.getElementById('email').value.trim(),
             passport: document.getElementById('passport').value.trim(),
         }

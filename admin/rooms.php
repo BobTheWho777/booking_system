@@ -3,6 +3,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../config/app.php';
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../includes/admin_layout.php';
+require_once __DIR__ . '/../includes/room_images.php';
 require_admin();
 
 $statuses = [
@@ -23,18 +24,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['delete_id'])) {
         $id = (int)$_POST['delete_id'];
         
-        // Получаем изображения перед удалением комнаты
         $stmt = $pdo->prepare('SELECT image_path FROM room_images WHERE room_id = ?');
         $stmt->execute([$id]);
         $images = $stmt->fetchAll(PDO::FETCH_COLUMN);
-        
-        // Удаляем файлы изображений
-        foreach ($images as $img) {
-            $filePath = __DIR__ . '/../uploads/rooms/' . $img;
-            if (file_exists($filePath)) {
-                unlink($filePath);
-            }
-        }
+
+        delete_room_images($images);
         
         $stmt = $pdo->prepare('SELECT COUNT(*) FROM bookings WHERE room_id = ?');
         $stmt->execute([$id]);
@@ -70,127 +64,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             rooms_redirect('error', 'Комната с таким номером уже существует.');
         }
 
-        if ($id !== '') {
-            $stmt = $pdo->prepare('UPDATE rooms SET number = ?, type_id = ?, price = ?, status = ?, description = ? WHERE id = ?');
-            $stmt->execute([$number, $type_id, $price, $status, $description, $id]);
-            
-            // Обработка изображений
-            if (!empty($_FILES['images']['name'][0])) {
-                $uploadDir = __DIR__ . '/../uploads/rooms/';
-                
-                // Проверяем существование директории
-                if (!is_dir($uploadDir)) {
-                    mkdir($uploadDir, 0755, true);
-                }
-                
-                foreach ($_FILES['images']['tmp_name'] as $key => $tmpName) {
-                    if ($_FILES['images']['error'][$key] === UPLOAD_ERR_OK) {
-                        // Проверка типа файла
-                        $fileTmpPath = $_FILES['images']['tmp_name'][$key];
-                        $fileName = $_FILES['images']['name'][$key];
-                        $fileSize = $_FILES['images']['size'][$key];
-                        $fileType = $_FILES['images']['type'][$key];
-                        
-                        $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-                        $fileInfo = new finfo(FILEINFO_MIME_TYPE);
-                        $mimeType = $fileInfo->file($fileTmpPath);
-                        
-                        if (!in_array($mimeType, $allowedMimeTypes)) {
-                            rooms_redirect('error', 'Недопустимый тип файла. Разрешены только JPG, PNG, GIF, WebP.');
-                        }
-                        
-                        $fileName = uniqid() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '', basename($fileName));
-                        $targetPath = $uploadDir . $fileName;
-                        
-                        if (move_uploaded_file($tmpName, $targetPath)) {
-                            chmod($targetPath, 0644);
-                            $stmtImg = $pdo->prepare('INSERT INTO room_images (room_id, image_path, sort_order) VALUES (?, ?, ?)');
-                            $stmtImg->execute([$id, $fileName, $key]);
-                        } else {
-                            rooms_redirect('error', 'Ошибка при сохранении файла: ' . $fileName);
-                        }
-                    } else {
-                        $errorMessages = [
-                            UPLOAD_ERR_INI_SIZE => 'Файл слишком большой (превышен лимит php.ini)',
-                            UPLOAD_ERR_FORM_SIZE => 'Файл слишком большой (превышен лимит формы)',
-                            UPLOAD_ERR_PARTIAL => 'Файл загружен частично',
-                            UPLOAD_ERR_NO_FILE => 'Файл не был загружен',
-                            UPLOAD_ERR_NO_TMP_DIR => 'Отсутствует временная директория',
-                            UPLOAD_ERR_CANT_WRITE => 'Ошибка записи на диск',
-                            UPLOAD_ERR_EXTENSION => 'Загрузка прервана расширением PHP'
-                        ];
-                        $errorMsg = $errorMessages[$_FILES['images']['error'][$key]] ?? 'Неизвестная ошибка';
-                        rooms_redirect('error', 'Ошибка загрузки файла: ' . $errorMsg);
-                    }
-                }
+        try {
+            $pdo->beginTransaction();
+
+            if ($id !== '') {
+                $stmt = $pdo->prepare('UPDATE rooms SET number = ?, type_id = ?, price = ?, status = ?, description = ? WHERE id = ?');
+                $stmt->execute([$number, $type_id, $price, $status, $description, $id]);
+
+                upload_room_images($pdo, (int)$id, $_FILES['images'] ?? []);
+
+                $pdo->commit();
+                rooms_redirect('success', 'Комната обновлена.');
             }
-            
-            rooms_redirect('success', 'Комната обновлена.');
-        } else {
+
             $stmt = $pdo->prepare('INSERT INTO rooms (number, type_id, price, status, description) VALUES (?, ?, ?, ?, ?)');
             $stmt->execute([$number, $type_id, $price, $status, $description]);
-            $newRoomId = $pdo->lastInsertId();
-            
-            // Обработка изображений для новой комнаты
-            if (!empty($_FILES['images']['name'][0])) {
-                $uploadDir = __DIR__ . '/../uploads/rooms/';
-                
-                // Проверяем существование директории
-                if (!is_dir($uploadDir)) {
-                    mkdir($uploadDir, 0755, true);
-                }
-                
-                foreach ($_FILES['images']['tmp_name'] as $key => $tmpName) {
-                    if ($_FILES['images']['error'][$key] === UPLOAD_ERR_OK) {
-                        // Проверка типа файла
-                        $fileTmpPath = $_FILES['images']['tmp_name'][$key];
-                        $fileName = $_FILES['images']['name'][$key];
-                        
-                        $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-                        $fileInfo = new finfo(FILEINFO_MIME_TYPE);
-                        $mimeType = $fileInfo->file($fileTmpPath);
-                        
-                        if (!in_array($mimeType, $allowedMimeTypes)) {
-                            // Удаляем только что созданную комнату, так как изображения не загрузились
-                            $stmtDel = $pdo->prepare('DELETE FROM rooms WHERE id = ?');
-                            $stmtDel->execute([$newRoomId]);
-                            rooms_redirect('error', 'Недопустимый тип файла. Разрешены только JPG, PNG, GIF, WebP.');
-                        }
-                        
-                        $fileName = uniqid() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '', basename($fileName));
-                        $targetPath = $uploadDir . $fileName;
-                        
-                        if (move_uploaded_file($tmpName, $targetPath)) {
-                            chmod($targetPath, 0644);
-                            $stmtImg = $pdo->prepare('INSERT INTO room_images (room_id, image_path, sort_order) VALUES (?, ?, ?)');
-                            $stmtImg->execute([$newRoomId, $fileName, $key]);
-                        } else {
-                            // Удаляем только что созданную комнату
-                            $stmtDel = $pdo->prepare('DELETE FROM rooms WHERE id = ?');
-                            $stmtDel->execute([$newRoomId]);
-                            rooms_redirect('error', 'Ошибка при сохранении файла: ' . $fileName);
-                        }
-                    } else {
-                        // Удаляем только что созданную комнату
-                        $stmtDel = $pdo->prepare('DELETE FROM rooms WHERE id = ?');
-                        $stmtDel->execute([$newRoomId]);
-                        
-                        $errorMessages = [
-                            UPLOAD_ERR_INI_SIZE => 'Файл слишком большой (превышен лимит php.ini)',
-                            UPLOAD_ERR_FORM_SIZE => 'Файл слишком большой (превышен лимит формы)',
-                            UPLOAD_ERR_PARTIAL => 'Файл загружен частично',
-                            UPLOAD_ERR_NO_FILE => 'Файл не был загружен',
-                            UPLOAD_ERR_NO_TMP_DIR => 'Отсутствует временная директория',
-                            UPLOAD_ERR_CANT_WRITE => 'Ошибка записи на диск',
-                            UPLOAD_ERR_EXTENSION => 'Загрузка прервана расширением PHP'
-                        ];
-                        $errorMsg = $errorMessages[$_FILES['images']['error'][$key]] ?? 'Неизвестная ошибка';
-                        rooms_redirect('error', 'Ошибка загрузки файла: ' . $errorMsg);
-                    }
-                }
-            }
-            
+
+            $newRoomId = (int)$pdo->lastInsertId();
+
+            upload_room_images($pdo, $newRoomId, $_FILES['images'] ?? []);
+
+            $pdo->commit();
             rooms_redirect('success', 'Комната добавлена.');
+        } catch (Throwable $e) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+
+            rooms_redirect('error', $e->getMessage());
         }
     }
 }
@@ -200,6 +101,15 @@ if (isset($_GET['edit'])) {
     $stmt = $pdo->prepare('SELECT * FROM rooms WHERE id = ?');
     $stmt->execute([(int)$_GET['edit']]);
     $editRoom = $stmt->fetch();
+
+    if ($editRoom) {
+        $stmt = $pdo->prepare(
+            'SELECT image_path FROM room_images WHERE room_id = ? ORDER BY sort_order, id'
+        );
+
+        $stmt->execute([$editRoom['id']]);
+        $editRoom['images'] = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    }
 }
 
 $stmt = $pdo->query('SELECT id, name, capacity FROM room_types ORDER BY name');
@@ -213,18 +123,26 @@ $stmt = $pdo->query('
 ');
 $rooms = $stmt->fetchAll();
 
-// Загружаем изображения для каждой комнаты
-foreach ($rooms as &$room) {
-    $stmt = $pdo->prepare('SELECT image_path FROM room_images WHERE room_id = ? ORDER BY sort_order, id');
-    $stmt->execute([$room['id']]);
-    $room['images'] = $stmt->fetchAll(PDO::FETCH_COLUMN);
+$stmt = $pdo->query(
+    'SELECT room_id, image_path FROM room_images ORDER BY sort_order, id'
+);
+
+$roomImages = [];
+
+foreach ($stmt->fetchAll() as $image) {
+    $roomImages[$image['room_id']][] = $image['image_path'];
 }
+
+foreach ($rooms as &$room) {
+    $room['images'] = $roomImages[$room['id']] ?? [];
+}
+unset($room);
 
 admin_page_start('Управление комнатами', 'rooms');
 ?>
 <div style="margin-bottom: 2rem;">
     <h3><?= $editRoom ? 'Редактировать комнату' : 'Добавить новую комнату' ?></h3>
-    <form method="post">
+    <form method="post" enctype="multipart/form-data">
         <input type="hidden" name="id" value="<?= h($editRoom['id'] ?? '') ?>">
         <div class="grid grid-4">
             <div class="form-group">
